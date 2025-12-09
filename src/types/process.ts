@@ -12,6 +12,7 @@ export interface Process {
   turnaroundTime?: number;
   waitingTime?: number;
   startTime?: number;
+  responseTime?: number;
   color?: string;
 }
 
@@ -27,7 +28,10 @@ export interface SchedulingResult {
   processes: Process[];
   avgWaitingTime: number;
   avgTurnaroundTime: number;
+  avgResponseTime: number;
   cpuUtilization: number;
+  throughput: number;
+  totalTime: number;
 }
 
 export interface MemoryBlock {
@@ -44,4 +48,20 @@ export interface SimulationResult {
   score: number;
   feedback: string[];
   optimalAlgorithm?: string;
+}
+
+export interface AlgorithmMetrics {
+  algorithm: string;
+  avgWaitingTime: number;
+  avgTurnaroundTime: number;
+  avgResponseTime: number;
+  cpuUtilization: number;
+  throughput: number;
+}
+
+export interface MemoryMetrics {
+  utilization: number;
+  externalFragmentation: number;
+  internalFragmentation: number;
+  largestFreeBlock: number;
 }

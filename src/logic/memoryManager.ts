@@ -12,52 +12,47 @@ export const initializeMemory = (): MemoryBlock[] => {
   }];
 };
 
-export const allocateMemoryManual = (
+// Internal helper: allocate into a free block at index (automatic allocation)
+const allocateIntoBlock = (
   blocks: MemoryBlock[],
   process: Process,
-  startPosition: number
+  blockIndex: number,
+  offset: number = 0
 ): MemoryBlock[] | null => {
   const newBlocks = [...blocks];
-  
-  // Find free block at position
-  const blockIndex = newBlocks.findIndex(
-    b => b.pid === null && b.start <= startPosition && 
-    b.start + b.size >= startPosition + process.memoryRequired
-  );
-
-  if (blockIndex === -1) return null;
-
   const block = newBlocks[blockIndex];
-  const offset = startPosition - block.start;
+
+  if (!block || block.pid !== null) return null;
+  if (offset < 0 || offset + process.memoryRequired > block.size) return null;
 
   const result: MemoryBlock[] = [];
-  
-  // Add free space before
+
+  // Free space before allocated area
   if (offset > 0) {
     result.push({
-      id: `free-${Date.now()}-before`,
+      id: `free-${Date.now()}-${Math.floor(Math.random() * 10000)}-b`,
       pid: null,
       start: block.start,
       size: offset
     });
   }
 
-  // Add allocated block
+  // Allocated block
   result.push({
-    id: `alloc-${process.pid}`,
+    id: `alloc-${process.pid}-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     pid: process.pid,
-    start: startPosition,
+    start: block.start + offset,
     size: process.memoryRequired,
     color: process.color
   });
 
-  // Add free space after
+  // Free space after allocated area
   const remainingSize = block.size - offset - process.memoryRequired;
   if (remainingSize > 0) {
     result.push({
-      id: `free-${Date.now()}-after`,
+      id: `free-${Date.now()}-${Math.floor(Math.random() * 10000)}-a`,
       pid: null,
-      start: startPosition + process.memoryRequired,
+      start: block.start + offset + process.memoryRequired,
       size: remainingSize
     });
   }
@@ -68,37 +63,33 @@ export const allocateMemoryManual = (
 
 // First Fit
 export const firstFit = (blocks: MemoryBlock[], process: Process): MemoryBlock[] | null => {
-  const freeBlock = blocks.find(b => b.pid === null && b.size >= process.memoryRequired);
-  
-  if (!freeBlock) return null;
-  
-  return allocateMemoryManual(blocks, process, freeBlock.start);
+  const blockIndex = blocks.findIndex(b => b.pid === null && b.size >= process.memoryRequired);
+  if (blockIndex === -1) return null;
+  return allocateIntoBlock(blocks, process, blockIndex, 0);
 };
 
 // Best Fit
 export const bestFit = (blocks: MemoryBlock[], process: Process): MemoryBlock[] | null => {
-  const freeBlocks = blocks.filter(b => b.pid === null && b.size >= process.memoryRequired);
-  
+  const freeBlocks = blocks
+    .map((b, i) => ({ b, i }))
+    .filter(x => x.b.pid === null && x.b.size >= process.memoryRequired);
+
   if (freeBlocks.length === 0) return null;
-  
-  const bestBlock = freeBlocks.reduce((best, current) => 
-    current.size < best.size ? current : best
-  );
-  
-  return allocateMemoryManual(blocks, process, bestBlock.start);
+
+  const best = freeBlocks.reduce((best, current) => current.b.size < best.b.size ? current : best);
+  return allocateIntoBlock(blocks, process, best.i, 0);
 };
 
 // Worst Fit
 export const worstFit = (blocks: MemoryBlock[], process: Process): MemoryBlock[] | null => {
-  const freeBlocks = blocks.filter(b => b.pid === null && b.size >= process.memoryRequired);
-  
+  const freeBlocks = blocks
+    .map((b, i) => ({ b, i }))
+    .filter(x => x.b.pid === null && x.b.size >= process.memoryRequired);
+
   if (freeBlocks.length === 0) return null;
-  
-  const worstBlock = freeBlocks.reduce((worst, current) => 
-    current.size > worst.size ? current : worst
-  );
-  
-  return allocateMemoryManual(blocks, process, worstBlock.start);
+
+  const worst = freeBlocks.reduce((worst, current) => current.b.size > worst.b.size ? current : worst);
+  return allocateIntoBlock(blocks, process, worst.i, 0);
 };
 
 // Compact Memory - merge adjacent free blocks

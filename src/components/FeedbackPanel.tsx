@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { Trophy, TrendingUp, Clock, Cpu, AlertCircle } from 'lucide-react';
+import { Trophy, TrendingUp, Clock, Cpu, AlertCircle, Activity } from 'lucide-react';
 import { SchedulingResult } from '@/types/process';
 
 interface FeedbackPanelProps {
@@ -7,9 +7,11 @@ interface FeedbackPanelProps {
   score: number;
   feedback: string[];
   optimalAlgorithm?: string;
+  mlRecommendedAlgorithm?: string;
+  useMLSuggestion?: boolean;
 }
 
-const FeedbackPanel = ({ result, score, feedback, optimalAlgorithm }: FeedbackPanelProps) => {
+const FeedbackPanel = ({ result, score, feedback, optimalAlgorithm, mlRecommendedAlgorithm, useMLSuggestion }: FeedbackPanelProps) => {
   if (!result) return null;
 
   return (
@@ -28,12 +30,12 @@ const FeedbackPanel = ({ result, score, feedback, optimalAlgorithm }: FeedbackPa
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Metrics Grid - Enhanced with Response Time and Throughput */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-card p-4 rounded-lg border border-border">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-warning" />
-            <span className="text-xs font-medium text-muted-foreground">Avg Waiting Time</span>
+            <span className="text-xs font-medium text-muted-foreground">Avg Waiting</span>
           </div>
           <span className="text-2xl font-bold text-foreground">
             {result.avgWaitingTime.toFixed(2)}s
@@ -52,12 +54,34 @@ const FeedbackPanel = ({ result, score, feedback, optimalAlgorithm }: FeedbackPa
 
         <div className="bg-card p-4 rounded-lg border border-border">
           <div className="flex items-center gap-2 mb-2">
+            <Activity className="w-4 h-4 text-info" />
+            <span className="text-xs font-medium text-muted-foreground">Avg Response</span>
+          </div>
+          <span className="text-2xl font-bold text-foreground">
+            {result.avgResponseTime.toFixed(2)}s
+          </span>
+        </div>
+
+        <div className="bg-card p-4 rounded-lg border border-border">
+          <div className="flex items-center gap-2 mb-2">
             <Cpu className="w-4 h-4 text-success" />
-            <span className="text-xs font-medium text-muted-foreground">CPU Utilization</span>
+            <span className="text-xs font-medium text-muted-foreground">CPU Util</span>
           </div>
           <span className="text-2xl font-bold text-foreground">
             {result.cpuUtilization.toFixed(1)}%
           </span>
+        </div>
+      </div>
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg border border-border">
+        <div>
+          <span className="text-xs font-medium text-muted-foreground">Total Execution Time</span>
+          <p className="text-lg font-semibold text-foreground">{result.totalTime.toFixed(2)}s</p>
+        </div>
+        <div>
+          <span className="text-xs font-medium text-muted-foreground">Throughput</span>
+          <p className="text-lg font-semibold text-foreground">{result.throughput.toFixed(2)}%</p>
         </div>
       </div>
 
@@ -78,6 +102,13 @@ const FeedbackPanel = ({ result, score, feedback, optimalAlgorithm }: FeedbackPa
         ))}
       </div>
 
+      {useMLSuggestion && mlRecommendedAlgorithm && (
+        <div className="p-4 bg-primary/10 border-2 border-primary rounded-lg mb-2">
+          <span className="text-sm font-medium text-primary">
+            🤖 ML Recommended Algorithm: <strong>{mlRecommendedAlgorithm}</strong>
+          </span>
+        </div>
+      )}
       {optimalAlgorithm && (
         <div className="p-4 bg-primary/10 border-2 border-primary rounded-lg">
           <span className="text-sm font-medium text-primary">

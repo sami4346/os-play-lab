@@ -6,6 +6,7 @@ import AlgorithmSelector from '@/components/AlgorithmSelector';
 import MemoryVisualizer from '@/components/MemoryVisualizer';
 import GanttChart from '@/components/GanttChart';
 import FeedbackPanel from '@/components/FeedbackPanel';
+import ComparativeAnalysis from '@/components/ComparativeAnalysis';
 import Scoreboard from '@/components/Scoreboard';
 import { fcfs, sjf, srjf, roundRobin, priorityScheduling, rrWithPriority } from '@/logic/cpuAlgorithms';
 import { 
@@ -18,6 +19,7 @@ import {
   MemoryBlock
 } from '@/logic/memoryManager';
 import { evaluateSimulation } from '@/logic/feedbackSystem';
+import { AlgorithmMetrics } from '@/types/process';
 import { toast } from 'sonner';
 
 const PROCESS_COLORS = [
@@ -27,6 +29,12 @@ const PROCESS_COLORS = [
 
 const Index = () => {
   const [processes, setProcesses] = useState<Process[]>([]);
+  const [showManualForm, setShowManualForm] = useState<boolean>(false);
+  const [manualPid, setManualPid] = useState<string>('');
+  const [manualArrival, setManualArrival] = useState<number>(0);
+  const [manualBurst, setManualBurst] = useState<number>(2);
+  const [manualPriority, setManualPriority] = useState<number>(1);
+  const [manualMemory, setManualMemory] = useState<number>(64);
   const [memoryBlocks, setMemoryBlocks] = useState<MemoryBlock[]>(initializeMemory());
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('FCFS');
   const [memoryMode, setMemoryMode] = useState<string>('firstFit');
@@ -35,7 +43,10 @@ const Index = () => {
   const [score, setScore] = useState<number>(0);
   const [feedback, setFeedback] = useState<string[]>([]);
   const [optimalAlgorithm, setOptimalAlgorithm] = useState<string>('');
+  const [comparativeMetrics, setComparativeMetrics] = useState<AlgorithmMetrics[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [useMLSuggestion, setUseMLSuggestion] = useState<boolean>(false);
+  const [mlRecommendedAlgorithm, setMLRecommendedAlgorithm] = useState<string>('');
 
   const generateRandomProcesses = () => {
     const count = Math.floor(Math.random() * 3) + 4; // 4-6 processes
@@ -58,6 +69,46 @@ const Index = () => {
     setSchedulingResult(null);
     setFeedback([]);
     toast.success(`Generated ${count} random processes!`);
+  };
+
+  const addManualProcess = () => {
+    // basic validation
+    if (manualBurst <= 0 || manualPriority < 0 || manualMemory <= 0) {
+      toast.error('Please provide valid numeric values for burst, priority and memory.');
+      return;
+    }
+
+    // create PID if not provided
+    const existingPids = new Set(processes.map(p => p.pid));
+    let pid = manualPid && manualPid.trim() !== '' ? manualPid.trim() : `P${processes.length + 1}`;
+    let suffix = 1;
+    while (existingPids.has(pid)) {
+      pid = `${pid}-${suffix}`;
+      suffix++;
+    }
+
+    const color = PROCESS_COLORS[processes.length % PROCESS_COLORS.length];
+
+    const newProc: Process = {
+      pid,
+      arrivalTime: Math.max(0, Math.floor(manualArrival)),
+      burstTime: Math.max(1, Math.floor(manualBurst)),
+      priority: Math.max(0, Math.floor(manualPriority)),
+      memoryRequired: Math.max(1, Math.floor(manualMemory)),
+      status: 'waiting',
+      color
+    };
+
+    setProcesses(prev => [...prev, newProc]);
+    setSchedulingResult(null);
+    setFeedback([]);
+    setShowManualForm(false);
+    setManualPid('');
+    setManualArrival(0);
+    setManualBurst(2);
+    setManualPriority(1);
+    setManualMemory(64);
+    toast.success(`Added process ${pid}`);
   };
 
   const allocateMemory = (procs: Process[]): boolean => {
@@ -92,7 +143,7 @@ const Index = () => {
     return true;
   };
 
-  const runSimulation = () => {
+  const runSimulation = async () => {
     if (processes.length === 0) {
       toast.error('Please generate processes first!');
       return;
@@ -100,6 +151,39 @@ const Index = () => {
 
     setIsSimulating(true);
     toast.info('Starting simulation...');
+
+    // ML suggestion
+    let algorithmToUse = selectedAlgorithm;
+    if (useMLSuggestion) {
+      try {
+        // Use Vite env var `VITE_API_BASE` when provided, otherwise default to localhost:5000
+        const apiBase = (import.meta as any)?.env?.VITE_API_BASE || 'http://localhost:5000';
+        const response = await fetch(`${apiBase}/api/suggest-algorithm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            processes: processes.map(p => ({
+              burst: p.burstTime,
+              priority: p.priority,
+              arrival: p.arrivalTime
+            }))
+          })
+        });
+        const data = await response.json();
+        if (data.suggested_algorithm) {
+          algorithmToUse = data.suggested_algorithm;
+          setMLRecommendedAlgorithm(data.suggested_algorithm);
+          setSelectedAlgorithm(data.suggested_algorithm);
+          toast.success(`ML recommends: ${data.suggested_algorithm}`);
+        } else {
+          toast.error('ML suggestion failed, using selected algorithm.');
+        }
+      } catch (err) {
+        toast.error('ML API error, using selected algorithm.');
+      }
+    } else {
+      setMLRecommendedAlgorithm('');
+    }
 
     // Allocate memory
     const memorySuccess = allocateMemory(processes);
@@ -112,7 +196,7 @@ const Index = () => {
     let result: SchedulingResult;
     const processCopies = processes.map(p => ({ ...p, remainingTime: p.burstTime }));
 
-    switch (selectedAlgorithm) {
+    switch (algorithmToUse) {
       case 'FCFS':
         result = fcfs(processCopies);
         break;
@@ -149,18 +233,26 @@ const Index = () => {
       updatedProcesses,
       result,
       memoryBlocks,
-      selectedAlgorithm,
-      memoryMode
+      algorithmToUse,
+      memoryMode,
+      timeQuantum
     );
 
-    setScore(prev => prev + evaluation.score);
+    // Only award points if the player selected the optimal algorithm
+    if (evaluation.optimalAlgorithm && evaluation.optimalAlgorithm === algorithmToUse) {
+      setScore(prev => prev + evaluation.score);
+    }
     setFeedback(evaluation.feedback);
     setOptimalAlgorithm(evaluation.optimalAlgorithm);
+    if (evaluation.comparativeMetrics) {
+      setComparativeMetrics(evaluation.comparativeMetrics);
+    }
 
     setTimeout(() => {
       setIsSimulating(false);
+      const pointsAwarded = (evaluation.optimalAlgorithm === algorithmToUse) ? evaluation.score : 0;
       toast.success('Simulation completed!', {
-        description: `Score: +${evaluation.score} points`
+        description: `Score: +${pointsAwarded} points`
       });
     }, 1000);
   };
@@ -177,6 +269,7 @@ const Index = () => {
     setMemoryBlocks(initializeMemory());
     setSchedulingResult(null);
     setFeedback([]);
+    setComparativeMetrics([]);
     setScore(0);
     toast.info('Simulation reset');
   };
@@ -212,7 +305,7 @@ const Index = () => {
           </div>
 
           {/* Algorithm Selector - Middle */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 space-y-6">
             <AlgorithmSelector
               selectedAlgorithm={selectedAlgorithm}
               onAlgorithmChange={setSelectedAlgorithm}
@@ -224,7 +317,57 @@ const Index = () => {
               onReset={handleReset}
               onGenerateProcesses={generateRandomProcesses}
               isSimulating={isSimulating}
+              useMLSuggestion={useMLSuggestion}
+              onMLSuggestionChange={setUseMLSuggestion}
             />
+            {/* Manual Process Creator */}
+            <div className="p-4 bg-card border border-border rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Add Custom Process</h4>
+                <button
+                  className="text-sm text-primary underline"
+                  onClick={() => setShowManualForm(prev => !prev)}
+                >
+                  {showManualForm ? 'Close' : 'Open'}
+                </button>
+              </div>
+
+              {showManualForm && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <input className="p-2 border rounded" placeholder="PID (optional)" value={manualPid} onChange={e => setManualPid(e.target.value)} />
+                    <input className="p-2 border rounded" type="number" min={0} value={manualArrival} onChange={e => setManualArrival(Number(e.target.value))} placeholder="Arrival" />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <input className="p-2 border rounded" type="number" min={1} value={manualBurst} onChange={e => setManualBurst(Number(e.target.value))} placeholder="Burst" />
+                    <input className="p-2 border rounded" type="number" min={0} value={manualPriority} onChange={e => setManualPriority(Number(e.target.value))} placeholder="Priority" />
+                    <input className="p-2 border rounded" type="number" min={1} value={manualMemory} onChange={e => setManualMemory(Number(e.target.value))} placeholder="Memory (MB)" />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button className="px-3 py-2 bg-primary text-white rounded" onClick={addManualProcess}>Add Process</button>
+                    <button className="px-3 py-2 border rounded" onClick={() => setShowManualForm(false)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* User manual / How to Play card */}
+            <div>
+              {/* Lazy import component to keep file small; simple inlined manual here */}
+              <div className="p-6 shadow-elegant border border-border rounded-lg bg-card">
+                <h3 className="font-semibold text-lg mb-2">How to Play</h3>
+                <ol className="text-sm list-decimal list-inside space-y-1 text-muted-foreground">
+                  <li>Generate random processes or add your own in the Process Table.</li>
+                  <li>Choose a CPU scheduling algorithm (or let ML suggest one).</li>
+                  <li>Pick a memory allocation mode (First Fit / Best Fit / Worst Fit).</li>
+                  <li>Click <strong>Start Simulation</strong>. The simulator will run and show the Gantt chart and metrics.</li>
+                  <li>If your selected algorithm matches the evaluator's optimal suggestion, you earn points.</li>
+                  <li>Manage memory: compact to reduce fragmentation and earn bonus points.</li>
+                </ol>
+                <p className="text-xs text-muted-foreground mt-3">Tip: Use Round Robin for fairness, SJF/SRJF for short bursts, and Priority when priorities are significant.</p>
+              </div>
+            </div>
           </div>
 
           {/* Memory Visualizer - Right */}
@@ -242,6 +385,15 @@ const Index = () => {
           {/* Gantt Chart */}
           <GanttChart ganttChart={schedulingResult?.ganttChart || []} />
 
+          {/* Comparative Analysis */}
+          {schedulingResult && comparativeMetrics.length > 0 && (
+            <ComparativeAnalysis
+              metrics={comparativeMetrics}
+              selectedAlgorithm={selectedAlgorithm}
+              optimalAlgorithm={optimalAlgorithm}
+            />
+          )}
+
           {/* Feedback Panel */}
           {schedulingResult && (
             <FeedbackPanel
@@ -249,6 +401,8 @@ const Index = () => {
               score={score}
               feedback={feedback}
               optimalAlgorithm={optimalAlgorithm}
+              mlRecommendedAlgorithm={mlRecommendedAlgorithm}
+              useMLSuggestion={useMLSuggestion}
             />
           )}
         </div>

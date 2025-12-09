@@ -16,6 +16,8 @@ interface AlgorithmSelectorProps {
   onReset: () => void;
   onGenerateProcesses: () => void;
   isSimulating: boolean;
+  useMLSuggestion: boolean;
+  onMLSuggestionChange: (useML: boolean) => void;
 }
 
 const AlgorithmSelector = ({
@@ -28,7 +30,9 @@ const AlgorithmSelector = ({
   onStartSimulation,
   onReset,
   onGenerateProcesses,
-  isSimulating
+  isSimulating,
+  useMLSuggestion,
+  onMLSuggestionChange
 }: AlgorithmSelectorProps) => {
   return (
     <Card className="p-6 space-y-6 shadow-elegant border-border">
@@ -42,7 +46,7 @@ const AlgorithmSelector = ({
           <Label htmlFor="algorithm" className="text-sm font-medium">
             CPU Scheduling Algorithm
           </Label>
-          <Select value={selectedAlgorithm} onValueChange={onAlgorithmChange}>
+          <Select value={selectedAlgorithm} onValueChange={onAlgorithmChange} disabled={useMLSuggestion}>
             <SelectTrigger id="algorithm" className="w-full">
               <SelectValue placeholder="Select algorithm" />
             </SelectTrigger>
@@ -55,6 +59,19 @@ const AlgorithmSelector = ({
               <SelectItem value="RR+Priority">Round Robin + Priority</SelectItem>
             </SelectContent>
           </Select>
+          <div className="flex items-center mt-2">
+            <input
+              type="checkbox"
+              id="ml-suggest"
+              checked={useMLSuggestion}
+              onChange={e => onMLSuggestionChange(e.target.checked)}
+              className="mr-2"
+              disabled={isSimulating}
+            />
+            <Label htmlFor="ml-suggest" className="text-sm cursor-pointer">
+              Let ML suggest the best algorithm
+            </Label>
+          </div>
         </div>
 
         {(selectedAlgorithm === 'RR' || selectedAlgorithm === 'RR+Priority') && (
@@ -84,7 +101,6 @@ const AlgorithmSelector = ({
               <SelectValue placeholder="Select mode" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="manual">Manual Placement</SelectItem>
               <SelectItem value="firstFit">First Fit</SelectItem>
               <SelectItem value="bestFit">Best Fit</SelectItem>
               <SelectItem value="worstFit">Worst Fit</SelectItem>
