@@ -23,6 +23,13 @@ A learning and playground app that simulates CPU scheduling and memory managemen
 - Optional ML-based recommender to suggest optimal scheduling algorithms based on your process data  
 - **Educational Feedback**: Contextual insights and recommendations for learning
 
+### 🎨 Enhanced UX (NEW!)
+- **Modern Design**: Glassmorphism effects, gradients, and smooth animations
+- **Enhanced Components**: Premium cards, buttons, and interactive elements
+- **Loading States**: Professional spinners and skeleton screens
+- **Visual Algorithm Selector**: Card-based selection with icons and descriptions
+- **Better Feedback**: Smooth transitions and micro-animations
+
 ---
 
 ## 🎓 Educational Value
