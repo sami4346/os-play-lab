@@ -7,6 +7,7 @@ import MemoryVisualizer from '@/components/MemoryVisualizer';
 import GanttChart from '@/components/GanttChart';
 import FeedbackPanel from '@/components/FeedbackPanel';
 import ComparativeAnalysis from '@/components/ComparativeAnalysis';
+import ProcessStateVisualizer from '@/components/ProcessStateVisualizer';
 import Scoreboard from '@/components/Scoreboard';
 import { fcfs, sjf, srjf, roundRobin, priorityScheduling, rrWithPriority } from '@/logic/cpuAlgorithms';
 import { 
@@ -382,6 +383,13 @@ const Index = () => {
 
         {/* Bottom Section - Full Width */}
         <div className="space-y-6">
+          {/* Process State Visualizer */}
+          <ProcessStateVisualizer 
+            processes={processes}
+            ganttChart={schedulingResult?.ganttChart || []}
+            isSimulating={isSimulating}
+          />
+
           {/* Gantt Chart */}
           <GanttChart ganttChart={schedulingResult?.ganttChart || []} />
 

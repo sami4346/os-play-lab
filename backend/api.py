@@ -3,12 +3,13 @@ from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 import requests
+from ml_scheduler import MLScheduler
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:8080"])
 
 # HuggingFace API configuration
 HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
@@ -60,13 +61,39 @@ def chat():
         }
 
         output = query_hf(payload)
-        
+
         # For Flan-T5, the response is a list with a dictionary containing 'generated_text'
+        if isinstance(output, list) and len(output) > 0 and 'generated_text' in output[0]:
+            response_text = output[0]['generated_text'].strip()
+            return jsonify({"response": response_text})
+        else:
+            return jsonify({"error": "Unexpected response format from model"}), 500
 
     except Exception as e:
         return jsonify({
             "error": str(e),
             "message": "Error processing your request. The model might be loading. Please try again in a few seconds."
+        }), 500
+
+@app.route("/api/suggest-algorithm", methods=["POST"])
+def suggest_algorithm():
+    try:
+        data = request.get_json()
+        processes = data.get("processes", [])
+
+        if not processes:
+            return jsonify({"error": "No processes provided"}), 400
+
+        # Initialize ML scheduler
+        ml_scheduler = MLScheduler()
+        suggested_algorithm = ml_scheduler.predict(processes)
+
+        return jsonify({"suggested_algorithm": suggested_algorithm})
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e),
+            "message": "Error processing your request."
         }), 500
 
 if __name__ == "__main__":
