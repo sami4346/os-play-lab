@@ -58,11 +58,12 @@ This simulator is designed for:
 ### Run the frontend
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Then open the displayed URL in your browser (commonly `http://localhost:5173`).
+Then open the displayed URL in your browser (commonly `http://localhost:8080`).
 
 ### (Optional) Run the backend ML API
 
@@ -85,6 +86,8 @@ To make the frontend call it during development, set an environment variable:
   npm run dev
   ```
 - (Alternatively, set this variable globally for your user — then restart your terminal.)
+
+**Note**: The Gemini AI API has free tier limits. If you exceed the quota, the chat feature will automatically fall back to a local knowledge base. For unlimited usage, consider upgrading to a paid Google AI plan.
 
 ---
 
@@ -206,7 +209,3 @@ Built with:
 
 ---
 
-**Made with ❤️ for learning Operating Systems**
-
-**Version**: 1.1  
-**Last Updated**: December 2024
