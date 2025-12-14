@@ -1,14 +1,17 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useNav } from '@/context/NavContext';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronLeft, ChevronRight, Home, MessageSquare, BookOpen, Settings, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 import { useEffect, useState } from 'react';
 
 const Navigation = () => {
   const { isSidebarOpen, toggleSidebar } = useNav();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isKeyboardUser, setIsKeyboardUser] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
 
   // Detect keyboard navigation
   useEffect(() => {
@@ -43,11 +46,36 @@ const Navigation = () => {
       if (e.key === 'Escape' && isSidebarOpen && window.innerWidth < 1024) {
         toggleSidebar();
       }
+      // Ctrl + H for Home
+      if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        e.preventDefault();
+        navigate('/');
+      }
+      // Ctrl + C for Chat
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        e.preventDefault();
+        navigate('/chat');
+      }
+      // Ctrl + L for Learn
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        navigate('/learn');
+      }
+      // Ctrl + , for Settings
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        navigate('/settings');
+      }
+      // F1 for Help
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
+      }
     };
 
     document.addEventListener('keydown', handleShortcuts);
     return () => document.removeEventListener('keydown', handleShortcuts);
-  }, [isSidebarOpen, toggleSidebar]);
+  }, [isSidebarOpen, toggleSidebar, navigate]);
 
   const navItems = [
     { 
@@ -77,13 +105,6 @@ const Navigation = () => {
       icon: Settings,
       description: 'Application settings and preferences',
       shortcut: 'Ctrl+,'
-    },
-    { 
-      name: 'Help', 
-      path: '/help', 
-      icon: HelpCircle,
-      description: 'Get help and support',
-      shortcut: 'F1'
     },
   ];
 
@@ -241,7 +262,7 @@ const Navigation = () => {
                   Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+K</kbd> to toggle sidebar
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Tab</kbd> to navigate
+                  Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">F1</kbd> for shortcuts
                 </p>
               </div>
             )}
@@ -264,6 +285,12 @@ const Navigation = () => {
           }}
         />
       )}
+      
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal 
+        open={showKeyboardShortcuts} 
+        onOpenChange={setShowKeyboardShortcuts} 
+      />
     </>
   );
 };

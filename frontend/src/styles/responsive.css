@@ -1,0 +1,191 @@
+/* Tablet and Responsive Optimizations */
+
+/* Tablet layout improvements (768px to 1024px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Better spacing on tablet */
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  /* Improve grid density on tablet */
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Better heading sizes for tablet */
+  h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  /* Optimize button sizing for touch */
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Better card padding on tablet */
+  .card {
+    padding: 1.5rem;
+  }
+
+  /* Horizontal scroll optimization for tables */
+  .table-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Better FAB positioning on tablet */
+  .fab-button {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
+/* Mobile optimizations (under 640px) */
+@media (max-width: 639px) {
+  /* Reduce padding on very small screens */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Stack grid on mobile */
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Optimize heading sizes for mobile */
+  h1 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  /* Better button sizing on mobile */
+  button,
+  [role="button"] {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  /* Optimize card padding on mobile */
+  .card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  /* Better spacing between sections */
+  main > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Large desktop optimizations (1280px and above) */
+@media (min-width: 1280px) {
+  /* Increase spacing for readability */
+  .gap-6 {
+    gap: 1.5rem;
+  }
+
+  .gap-8 {
+    gap: 2rem;
+  }
+
+  /* Better max-width for large screens */
+  .container {
+    max-width: 1280px;
+  }
+
+  /* Hover effects only on devices that support hover */
+  @media (hover: hover) {
+    button:hover,
+    .interactive:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px hsl(var(--primary) / 0.15);
+    }
+  }
+}
+
+/* Horizontal scrolling container improvements */
+.scrollable-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+}
+
+.scrollable-container > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Scrollbar styling for better UX */
+.scrollable-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 3px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground) / 0.3);
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-top {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-left {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+  }
+
+  .safe-area-right {
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+  }
+}
+
+/* Smooth transitions only when motion is not reduced */
+@media (prefers-reduced-motion: no-preference) {
+  .transition-smooth {
+    transition: all 0.3s ease-out;
+  }
+
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+}

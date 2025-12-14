@@ -102,6 +102,24 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Respect user's motion preferences - WCAG 2.1 Success Criterion 2.3.3 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
 /* Better focus states for accessibility */
 button:focus-visible,
 input:focus-visible,

@@ -1,50 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, Home, CheckCircle, Circle, PlayCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { ChevronRight, Home } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
   path: string;
 }
 
-interface WorkflowStep {
-  id: string;
-  label: string;
-  status: 'pending' | 'active' | 'completed';
-  icon?: React.ReactNode;
-}
-
 const Breadcrumbs = () => {
   const location = useLocation();
-  
-  const getWorkflowSteps = (): WorkflowStep[] => {
-    // This would typically come from your app state/context
-    // For now, we'll simulate the workflow state
-    const hasProcesses = localStorage.getItem('processes') ? JSON.parse(localStorage.getItem('processes')!).length > 0 : false;
-    const hasAlgorithm = localStorage.getItem('selectedAlgorithm') !== null;
-    const hasResults = localStorage.getItem('schedulingResult') !== null;
-    
-    return [
-      {
-        id: 'generate',
-        label: '1. Generate Processes',
-        status: hasProcesses ? 'completed' : 'active',
-        icon: hasProcesses ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4" />
-      },
-      {
-        id: 'algorithm',
-        label: '2. Select Algorithm',
-        status: hasAlgorithm ? 'completed' : hasProcesses ? 'active' : 'pending',
-        icon: hasAlgorithm ? <CheckCircle className="h-4 w-4" /> : hasProcesses ? <PlayCircle className="h-4 w-4" /> : <Circle className="h-4 w-4" />
-      },
-      {
-        id: 'results',
-        label: '3. View Results',
-        status: hasResults ? 'completed' : hasAlgorithm ? 'active' : 'pending',
-        icon: hasResults ? <CheckCircle className="h-4 w-4" /> : hasAlgorithm ? <PlayCircle className="h-4 w-4" /> : <Circle className="h-4 w-4" />
-      }
-    ];
-  };
   
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     const pathnames = location.pathname.split('/').filter(x => x);
@@ -80,63 +43,9 @@ const Breadcrumbs = () => {
   };
 
   const breadcrumbs = getBreadcrumbs();
-  const workflowSteps = getWorkflowSteps();
-  const isHomePage = location.pathname === '/';
 
   return (
     <div className="space-y-4 mb-6">
-      {/* Workflow Breadcrumbs - Only show on home page */}
-      {isHomePage && (
-        <nav 
-          aria-label="Workflow progress"
-          className="bg-card border rounded-lg p-4 shadow-sm"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-foreground">OS Simulation Workflow</h2>
-            <Badge variant="outline" className="text-xs">
-              {workflowSteps.filter(step => step.status === 'completed').length} of {workflowSteps.length} completed
-            </Badge>
-          </div>
-          <ol className="flex items-center space-x-2 md:space-x-4 overflow-x-auto">
-            {workflowSteps.map((step, index) => (
-              <li key={step.id} className="flex items-center min-w-0">
-                <div className="flex items-center">
-                  <div
-                    className={`
-                      flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200
-                      ${step.status === 'completed' 
-                        ? 'bg-success border-success text-success-foreground' 
-                        : step.status === 'active'
-                        ? 'bg-primary border-primary text-primary-foreground animate-pulse'
-                        : 'bg-muted border-muted-foreground/30 text-muted-foreground'
-                      }
-                    `}
-                  >
-                    {step.icon}
-                  </div>
-                  <span
-                    className={`
-                      ml-2 text-sm font-medium whitespace-nowrap
-                      ${step.status === 'completed' 
-                        ? 'text-success' 
-                        : step.status === 'active'
-                        ? 'text-primary'
-                        : 'text-muted-foreground'
-                      }
-                    `}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-                {index < workflowSteps.length - 1 && (
-                  <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 flex-shrink-0" />
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
-
       {/* Navigation Breadcrumbs */}
       {breadcrumbs.length > 0 && (
         <nav 

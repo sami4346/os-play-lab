@@ -11,7 +11,6 @@ import { NavProvider, useNav } from "./context/NavContext";
 import Navigation from "@/components/Navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FloatingActionButton from "@/components/FloatingActionButton";
-import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,7 +138,6 @@ const App = () => (
         <NavProvider>
           <Navigation />
           <MainContent />
-          <KeyboardShortcuts />
         </NavProvider>
       </BrowserRouter>
     </TooltipProvider>

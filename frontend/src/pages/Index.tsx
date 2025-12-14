@@ -280,14 +280,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-gradient-hero border-b border-border shadow-sm sticky top-0 z-40">
+      <header className="bg-gradient-hero border-b border-border shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-primary-foreground mb-0.5">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg mb-0.5">
                 OS Process Scheduler
               </h1>
-              <p className="text-primary-foreground/80 text-xs sm:text-sm">
+              <p className="text-white/90 text-xs sm:text-sm drop-shadow-md">
                 Learn CPU scheduling & memory management interactively
               </p>
             </div>
