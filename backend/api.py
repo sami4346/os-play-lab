@@ -178,9 +178,12 @@ def suggest_algorithm():
 
         # Initialize ML scheduler
         ml_scheduler = MLScheduler()
-        suggested_algorithm = ml_scheduler.predict(processes)
+        suggested_algorithm, confidence = ml_scheduler.predict_with_confidence(processes)
 
-        return jsonify({"suggested_algorithm": suggested_algorithm})
+        return jsonify({
+            "suggested_algorithm": suggested_algorithm,
+            "confidence": confidence
+        })
 
     except Exception as e:
         return jsonify({

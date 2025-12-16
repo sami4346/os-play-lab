@@ -16,6 +16,11 @@ A learning and playground app that simulates CPU scheduling and memory managemen
 - Memory allocation methods: `firstFit`, `bestFit`, `worstFit`, automatic allocation, plus optional compaction  
 
 ### Advanced Features
+- **Page Replacement Algorithms** ⭐ NEW: Complete simulation of FIFO, LRU, Optimal, and Clock algorithms
+  - Interactive visualization with step-by-step animation
+  - Predefined patterns (random, sequential, locality, thrashing)
+  - Algorithm comparison with detailed statistics
+  - Educational insights about page faults and Belady's anomaly
 - **Comparative Analysis**: Side-by-side algorithm performance comparison with charts
 - **Advanced Metrics**: CPU utilization, throughput, response time, waiting time, turnaround time, and more
 - **Smart Recommendations**: Dynamic algorithm suggestions based on process characteristics
@@ -43,6 +48,8 @@ This simulator is designed for:
 ✅ How different scheduling algorithms perform under various workloads  
 ✅ Process state transitions (five-state model) with controllable animation  
 ✅ Memory allocation strategies and fragmentation  
+✅ **Page replacement algorithms (FIFO, LRU, Optimal, Clock)** ⭐ NEW
+✅ **Virtual memory concepts, page faults, and Belady's anomaly** ⭐ NEW
 ✅ Performance metrics and trade-offs  
 ✅ Real-time visualization of OS concepts  
 
@@ -93,6 +100,7 @@ To make the frontend call it during development, set an environment variable:
 
 ## 📚 Documentation
 
+- **[PAGE_REPLACEMENT.md](PAGE_REPLACEMENT.md)**: Complete guide to Page Replacement Algorithms feature ⭐ NEW
 - **[ENHANCEMENTS.md](ENHANCEMENTS.md)**: Comprehensive documentation of all features and metrics
 - **[PROCESS_STATE_VISUALIZATION.md](PROCESS_STATE_VISUALIZATION.md)**: Detailed guide to the process state visualizer feature
 - **[ANIMATION_CONTROLS_UPDATE.md](ANIMATION_CONTROLS_UPDATE.md)**: Guide to animation controls and speed adjustment
@@ -115,6 +123,7 @@ To make the frontend call it during development, set an environment variable:
 
 ## 🎮 How to Use
 
+### CPU Scheduling & Memory Management (Home Page)
 1. **Generate Processes**: Click "Generate Random Processes" or add custom processes
 2. **Toggle Sidebar**: Click the chevron button (desktop) or hamburger menu (mobile) to collapse/expand sidebar for more space
 3. **Select Algorithm**: Choose a CPU scheduling algorithm (or let ML suggest one)
@@ -128,11 +137,36 @@ To make the frontend call it during development, set an environment variable:
    - Review **Performance Metrics** and recommendations
 7. **Optimize**: Try different algorithms and memory strategies to maximize your score!
 
+### Page Replacement Algorithms ⭐ NEW
+1. **Access Feature**: Click "Page Replacement" in the sidebar (or press Ctrl+P)
+2. **Set Reference String**: 
+   - Enter custom page numbers (e.g., "7, 0, 1, 2, 0, 3")
+   - Generate random or locality patterns
+   - Choose from predefined educational patterns
+3. **Configure Frames**: Use slider to set number of page frames (1-10)
+4. **Select Algorithm**: Choose FIFO, LRU, Optimal, or Clock
+5. **Run Simulation**: Watch step-by-step animation of page replacements
+6. **Control Animation**: Play/pause, step forward/backward, adjust speed
+7. **Compare Algorithms**: Run all algorithms to see performance differences
+8. **Learn**: Read insights about page faults, hits, and algorithm trade-offs
+
+See **[PAGE_REPLACEMENT.md](PAGE_REPLACEMENT.md)** for detailed usage guide.
+
 ---
 
 ## 🆕 Recent Additions
 
-### Animation Controls for Process State Visualization ⭐ NEW
+### Page Replacement Algorithms ⭐ NEW
+- **Complete Implementation**: FIFO, LRU, Optimal, and Clock algorithms
+- **Interactive Visualization**: Step-by-step animation with playback controls
+- **Educational Patterns**: 7 predefined patterns demonstrating key concepts
+- **Algorithm Comparison**: Side-by-side performance analysis
+- **Detailed Statistics**: Page faults, hits, charts, and insights
+- **Keyboard Shortcut**: Press Ctrl+P to access
+
+See **[PAGE_REPLACEMENT.md](PAGE_REPLACEMENT.md)** for complete documentation.
+
+### Animation Controls for Process State Visualization
 - **Manual Trigger**: Click "Show State Transitions" button to start
 - **Play/Pause Controls**: Full control over animation playback
 - **Speed Adjustment**: Slider to adjust speed from 0.25x (slow) to 2x (fast)

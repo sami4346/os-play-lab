@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useNav } from '@/context/NavContext';
 import { Button } from '@/components/ui/button';
-import { Menu, X, ChevronLeft, ChevronRight, Home, MessageSquare, BookOpen, Settings, HelpCircle } from 'lucide-react';
+import { Menu, X, ChevronLeft, ChevronRight, Home, MessageSquare, BookOpen, Settings, HelpCircle, FileText } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 import { useEffect, useState } from 'react';
@@ -56,6 +56,11 @@ const Navigation = () => {
         e.preventDefault();
         navigate('/chat');
       }
+      // Ctrl + P for Page Replacement
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        navigate('/page-replacement');
+      }
       // Ctrl + L for Learn
       if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
         e.preventDefault();
@@ -84,6 +89,13 @@ const Navigation = () => {
       icon: Home,
       description: 'Go to OS Simulator dashboard',
       shortcut: 'Ctrl+H'
+    },
+    { 
+      name: 'Page Replacement', 
+      path: '/page-replacement', 
+      icon: FileText,
+      description: 'Simulate page replacement algorithms',
+      shortcut: 'Ctrl+P'
     },
     { 
       name: 'OS Learning Assistant', 

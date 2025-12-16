@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ChatPage from "./pages/ChatPage";
 import LearningPage from "./pages/LearningPage";
 import SettingsPage from "./pages/SettingsPage";
+import PageReplacementPage from "./pages/PageReplacementPage";
 import NotFound from "./pages/NotFound";
 import { NavProvider, useNav } from "./context/NavContext";
 import Navigation from "@/components/Navigation";
@@ -114,6 +115,7 @@ const MainContent = () => {
             <Route path="/" element={<Index />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/learn" element={<LearningPage />} />
+            <Route path="/page-replacement" element={<PageReplacementPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
