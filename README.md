@@ -1,245 +1,69 @@
-# Smart OS Simulator (os-play-lab)
+﻿# Smart OS Simulator (os-play-lab)
 
-A learning and playground app that simulates CPU scheduling and memory management.
+Interactive playground for OS scheduling, memory allocation, page replacement, and an AI learning assistant.
 
-## 🔧 Features
+## Features
 
-### Core Features
-- **Visual process table, Gantt chart, and memory layout visualizer**
-- **Process State Visualization**: User-controlled animated view of the five-state process model with adjustable playback speed
-  - Manual animation trigger
-  - Play/Pause/Reset controls
-  - Speed adjustment (0.25x to 2x)
-  - Progress tracking
-- **Collapsible Sidebar**: Toggle sidebar on desktop and mobile for more screen space
-- Supports CPU scheduling algorithms: `FCFS`, `SJF`, `SRJF`, `RR`, `Priority`, `RR+Priority`  
-- Memory allocation methods: `firstFit`, `bestFit`, `worstFit`, automatic allocation, plus optional compaction  
+- CPU scheduler lab: create random or manual processes; run FCFS, SJF, SRJF, RR (time quantum), Priority, and RR+Priority; view Gantt chart, comparative metrics, feedback, and scoreboard.
 
-### Advanced Features
-- **Page Replacement Algorithms** ⭐ NEW: Complete simulation of FIFO, LRU, Optimal, and Clock algorithms
-  - Interactive visualization with step-by-step animation
-  - Predefined patterns (random, sequential, locality, thrashing)
-  - Algorithm comparison with detailed statistics
-  - Educational insights about page faults and Belady's anomaly
-- **Comparative Analysis**: Side-by-side algorithm performance comparison with charts
-- **Advanced Metrics**: CPU utilization, throughput, response time, waiting time, turnaround time, and more
-- **Smart Recommendations**: Dynamic algorithm suggestions based on process characteristics
-- **Memory Fragmentation Tracking**: Visual representation of memory usage and fragmentation
-- Optional ML-based recommender to suggest optimal scheduling algorithms based on your process data  
-- **Educational Feedback**: Contextual insights and recommendations for learning
+- Memory management: first/best/worst-fit allocation, fragmentation display, compaction control, and memory layout visualizer.
 
-### 🎨 Enhanced UX (NEW!)
-- **Modern Design**: Glassmorphism effects, gradients, and smooth animations
-- **Enhanced Components**: Premium cards, buttons, and interactive elements
-- **Loading States**: Professional spinners and skeleton screens
-- **Visual Algorithm Selector**: Card-based selection with icons and descriptions
-- **Better Feedback**: Smooth transitions and micro-animations
+- Page replacement studio: FIFO, LRU, Optimal, and Clock with step-by-step animation, speed control, predefined patterns, stats, and full algorithm comparison.
 
----
+- AI assistant and learning hub: chat page backed by Flask + Gemini (or a local OS knowledge base) plus curated reading lists and tips.
 
-## 🎓 Educational Value
+- UX & accessibility: responsive collapsible sidebar, keyboard shortcuts (Ctrl+H/C/P/L/,/K, F1), floating action button, screen-reader announcements, toasts, and loading states.
 
-This simulator is designed for:
-- **Students** learning Operating System concepts
-- **Educators** teaching CPU scheduling and memory management
-- **Enthusiasts** exploring OS algorithms interactively
+## Architecture
+- `frontend/`: Vite + React + TypeScript + Tailwind + shadcn/ui. Pages for the simulator, chat, learning, settings, and page replacement; core logic in `src/logic`, UI primitives in `src/components/ui`.
 
-### What You'll Learn:
-✅ How different scheduling algorithms perform under various workloads  
-✅ Process state transitions (five-state model) with controllable animation  
-✅ Memory allocation strategies and fragmentation  
-✅ **Page replacement algorithms (FIFO, LRU, Optimal, Clock)** ⭐ NEW
-✅ **Virtual memory concepts, page faults, and Belady's anomaly** ⭐ NEW
-✅ Performance metrics and trade-offs  
-✅ Real-time visualization of OS concepts  
+- `backend/`: Flask API for ML recommendations and chat. `/api/suggest-algorithm` uses `MLScheduler` (RandomForest + heuristics, cached in `ml_scheduler.pkl`) to pick a scheduler; `/api/chat` proxies Gemini when `GEMINI_API_KEY` is set and falls back to an OS knowledge base.
 
----
+- `ml_scheduler.pkl`: pre-trained model loaded at startup; regenerated automatically if missing or incompatible.
 
-## 🛠️ Getting Started (Development)
+## Prerequisites
+- Node.js 18+ and npm.
+- Python 3.10+ (with pip/venv) for the optional backend.
+- Optional: `GEMINI_API_KEY` (backend) to enable Gemini responses; otherwise the chatbot uses local knowledge.
 
-### Prerequisites
-- Node.js (version 16 or above)  
-- npm (comes with Node)  
-- If you want ML suggestions: Python 3.8+  
+## Frontend (dev/build)
 
-### Run the frontend
+- `cd frontend`
+- `npm install`
+- `npm run dev` (default http://localhost:5173). Set `VITE_API_BASE=http://localhost:5000` to point at the backend.
+- `npm run build` to produce the production bundle; `npm run preview` to serve the build locally.
+- `npm run lint` for static checks.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## Backend (optional: ML + chat API)
 
-Then open the displayed URL in your browser (commonly `http://localhost:8080`).
+- Set `GEMINI_API_KEY=<your-key>` if you want Gemini answers; otherwise only the knowledge base is used.
+- `cd backend`
+- `python -m venv .venv`
+- `..\.venv\Scripts\Activate.ps1`
+- `pip install -r requirements.txt`
+- Run `python api.py` (serves on http://localhost:5000 with CORS for the frontend ports).
+- The ML recommender loads `ml_scheduler.pkl` if present; if missing or incompatible it self-trains on synthetic data and saves a fresh model.
 
-### (Optional) Run the backend ML API
+## Using the simulator
 
-If you want to enable ML-based suggestions:
+- Home: generate or add processes, choose scheduler and memory mode, optionally enable ML suggestion, set time quantum, then start simulation to see memory layout, process state animation, Gantt chart, metrics, comparative analysis, and feedback/score updates. Use the compact memory action to reduce fragmentation; reset to start over.
 
-```bash
-cd backend
-python -m venv .venv
-.\\.venv\\Scripts\\Activate.ps1
-pip install -r requirements.txt
-python api.py
-```
+- Page Replacement: open Page Replacement, edit or generate reference strings, select frames and algorithm, run simulation, animate steps, and compare algorithms side-by-side with stats and insights.
 
-This will run the backend server (default: `http://localhost:5000`).  
-To make the frontend call it during development, set an environment variable:
+- Chat/Learn: ask OS questions in Chat (requires backend for remote/knowledge-base answers) and browse curated learning resources; use keyboard shortcuts or the floating action button to navigate quickly.
 
-- In PowerShell:  
-  ```powershell
-  $env:VITE_API_BASE = "http://localhost:5000"
-  npm run dev
-  ```
-- (Alternatively, set this variable globally for your user — then restart your terminal.)
+## Repository layout
 
-**Note**: The Gemini AI API has free tier limits. If you exceed the quota, the chat feature will automatically fall back to a local knowledge base. For unlimited usage, consider upgrading to a paid Google AI plan.
+- `frontend/src/logic/`: scheduling, memory allocation, metrics, and page replacement algorithms.
 
----
+- `frontend/src/components/`: simulator UI, visualizers, charts, toasts, navigation, accessibility helpers.
 
-## 📚 Documentation
+- `frontend/src/pages/`: routed pages (Home, Page Replacement, Chat, Learn, Settings, 404).
 
-- **[PAGE_REPLACEMENT.md](PAGE_REPLACEMENT.md)**: Complete guide to Page Replacement Algorithms feature ⭐ NEW
-- **[ENHANCEMENTS.md](ENHANCEMENTS.md)**: Comprehensive documentation of all features and metrics
-- **[PROCESS_STATE_VISUALIZATION.md](PROCESS_STATE_VISUALIZATION.md)**: Detailed guide to the process state visualizer feature
-- **[ANIMATION_CONTROLS_UPDATE.md](ANIMATION_CONTROLS_UPDATE.md)**: Guide to animation controls and speed adjustment
-- **[COLLAPSIBLE_SIDEBAR.md](COLLAPSIBLE_SIDEBAR.md)**: Guide to the collapsible sidebar feature
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)**: Complete implementation status and technical details
-- **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)**: Navigation hub for all documentation
+- `backend/`: Flask app and ML scheduler code.
 
----
+## Troubleshooting
 
-## ✅ What's Included
+- Chat offline? Ensure `python api.py` is running on port 5000 and `VITE_API_BASE` points to it; without GEMINI_API_KEY the chatbot still answers from the built-in OS knowledge base.
 
-- `src/`: React + TypeScript frontend code  
-  - `components/`: UI components including ProcessStateVisualizer and Navigation
-  - `logic/`: CPU scheduling algorithms, memory management, metrics calculation
-  - `types/`: TypeScript type definitions
-  - `context/`: Global state management (NavContext)
-- `backend/`: Optional Flask-based ML API for scheduling recommendations  
-
----
-
-## 🎮 How to Use
-
-### CPU Scheduling & Memory Management (Home Page)
-1. **Generate Processes**: Click "Generate Random Processes" or add custom processes
-2. **Toggle Sidebar**: Click the chevron button (desktop) or hamburger menu (mobile) to collapse/expand sidebar for more space
-3. **Select Algorithm**: Choose a CPU scheduling algorithm (or let ML suggest one)
-4. **Choose Memory Mode**: Select First Fit, Best Fit, or Worst Fit
-5. **Run Simulation**: Click "Start Simulation" to see the results
-6. **Analyze Results**: 
-   - Click **"Show State Transitions"** to view the animated **Process State Diagram**
-   - Use **animation controls** (play/pause, speed adjustment)
-   - Study the **Gantt Chart** timeline
-   - Compare algorithms in the **Comparative Analysis** section
-   - Review **Performance Metrics** and recommendations
-7. **Optimize**: Try different algorithms and memory strategies to maximize your score!
-
-### Page Replacement Algorithms ⭐ NEW
-1. **Access Feature**: Click "Page Replacement" in the sidebar (or press Ctrl+P)
-2. **Set Reference String**: 
-   - Enter custom page numbers (e.g., "7, 0, 1, 2, 0, 3")
-   - Generate random or locality patterns
-   - Choose from predefined educational patterns
-3. **Configure Frames**: Use slider to set number of page frames (1-10)
-4. **Select Algorithm**: Choose FIFO, LRU, Optimal, or Clock
-5. **Run Simulation**: Watch step-by-step animation of page replacements
-6. **Control Animation**: Play/pause, step forward/backward, adjust speed
-7. **Compare Algorithms**: Run all algorithms to see performance differences
-8. **Learn**: Read insights about page faults, hits, and algorithm trade-offs
-
-See **[PAGE_REPLACEMENT.md](PAGE_REPLACEMENT.md)** for detailed usage guide.
-
----
-
-## 🆕 Recent Additions
-
-### Page Replacement Algorithms ⭐ NEW
-- **Complete Implementation**: FIFO, LRU, Optimal, and Clock algorithms
-- **Interactive Visualization**: Step-by-step animation with playback controls
-- **Educational Patterns**: 7 predefined patterns demonstrating key concepts
-- **Algorithm Comparison**: Side-by-side performance analysis
-- **Detailed Statistics**: Page faults, hits, charts, and insights
-- **Keyboard Shortcut**: Press Ctrl+P to access
-
-See **[PAGE_REPLACEMENT.md](PAGE_REPLACEMENT.md)** for complete documentation.
-
-### Animation Controls for Process State Visualization
-- **Manual Trigger**: Click "Show State Transitions" button to start
-- **Play/Pause Controls**: Full control over animation playback
-- **Speed Adjustment**: Slider to adjust speed from 0.25x (slow) to 2x (fast)
-- **Progress Tracking**: Visual progress bar and time counter
-- **Better Learning**: Slow down to observe details, pause at critical moments
-
-See **[ANIMATION_CONTROLS_UPDATE.md](ANIMATION_CONTROLS_UPDATE.md)** for detailed documentation.
-
-### Collapsible Sidebar
-- **Desktop**: Toggle button to expand/collapse sidebar
-  - Expanded: Full navigation with text
-  - Collapsed: Icon-only mode with tooltips
-- **Mobile**: Hamburger menu with slide-in sidebar
-- **Persistent**: Remembers your preference
-- **Smooth**: Animated transitions
-
-See **[COLLAPSIBLE_SIDEBAR.md](COLLAPSIBLE_SIDEBAR.md)** for detailed documentation.
-
-### Process State Visualization
-- Real-time animated visualization of process states
-- User-controlled playback with adjustable speed
-- Educational legend explaining state transitions
-- Responsive design (horizontal on desktop, vertical on mobile)
-- Color-coded states with intuitive emoji icons
-
-See **[PROCESS_STATE_VISUALIZATION.md](PROCESS_STATE_VISUALIZATION.md)** for detailed documentation.
-
----
-
-## 🧪 Optional Enhancements (for maintainers)
-
-- Add unit tests (especially for scheduling logic and feedback system)  
-- Improve ML-based recommendation logic (in `backend/ml_scheduler.py`) if you want a smarter/more real-world model  
-- Add I/O simulation to demonstrate the Waiting state
-- Implement multi-core CPU simulation
-- Add export functionality for Gantt charts and state diagrams
-- Add step-by-step mode for animation
-- Add seek bar for animation navigation
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Some ideas:
-- Bug fixes and optimizations
-- Additional scheduling algorithms (e.g., Multilevel Queue, Aging)
-- Enhanced visualizations
-- I/O operation simulation
-- Unit and integration tests
-- Documentation improvements
-- UI/UX enhancements
-- Animation features (step mode, bookmarks, export)
-
----
-
-## 📄 License
-
-This project has no license file by default.  
-If you plan to share or open-source it, consider adding a license (e.g. MIT, GPL, Apache).  
-Feel free to fork, contribute improvements or add missing features.
-
----
-
-## 🏆 Credits
-
-Built with:
-- React + TypeScript
-- Vite
-- Tailwind CSS
-- shadcn/ui components
-- Recharts for visualizations
-- Lucide React for icons
-- Python + Flask (optional ML backend)
-
----
-
+- If the ML suggestion endpoint errors, delete `backend/ml_scheduler.pkl` and restart to retrain on synthetic data.
