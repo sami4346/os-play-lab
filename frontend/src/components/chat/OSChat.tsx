@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,7 +17,7 @@ const OSExpertBot = () => {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: '👋 Hello! I\'m your OS Learning Assistant. Ask me anything about Operating Systems!',
+      content: "👋 Hello! I'm your OS Learning Assistant. Ask me anything about Operating Systems!",
       timestamp: new Date()
     }]);
     
@@ -38,14 +38,14 @@ const OSExpertBot = () => {
       });
       
       if (response.ok) {
-        console.log('✓ Backend connected');
+        console.log('[Backend] Connected');
         setConnectionStatus('connected');
       } else {
-        console.error('✗ Backend responded with error:', response.status);
+        console.error('[Backend] Responded with error:', response.status);
         setConnectionStatus('disconnected');
       }
     } catch (error) {
-      console.error('✗ Cannot connect to backend:', error);
+      console.error('[Backend] Cannot connect:', error);
       setConnectionStatus('disconnected');
     }
   };
@@ -184,7 +184,7 @@ const OSExpertBot = () => {
       console.log('[API Call] Response data:', data);
       
       if (data.response) {
-        console.log('[API Call] ✓ Got response from backend');
+        console.log('[API Call] Got response from backend');
         return data.response;
       } else {
         console.warn('[API Call] No response field in data');
@@ -192,14 +192,14 @@ const OSExpertBot = () => {
       }
       
     } catch (error) {
-      console.error('[API Call] ✗ Error calling backend:', error);
+      console.error('[API Call] Error calling backend:', error);
       
       // Fallback to local knowledge base if API call fails
       console.log('[Fallback] Checking local knowledge base...');
       const queryLower = query.toLowerCase();
       for (const [key, value] of Object.entries(osKnowledgeBase)) {
         if (queryLower.includes(key)) {
-          console.log(`[Fallback] ✓ Found match for "${key}"`);
+          console.log(`[Fallback] Found match for "${key}"`);
           return value;
         }
       }
@@ -240,12 +240,12 @@ const OSExpertBot = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
-      console.log('[Chat] ✓ Message added to chat');
+      console.log('[Chat] Message added to chat');
     } catch (error) {
-      console.error('[Chat] ✗ Fatal error:', error);
+      console.error('[Chat] Fatal error:', error);
       const errorMessage: Message = {
         role: 'assistant',
-        content: `❌ Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        content: `Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -255,15 +255,109 @@ const OSExpertBot = () => {
     }
   };
 
-  const formatMessage = (content: string) => {
-    // Simple markdown-like formatting for bold text
-    return content.split('**').map((part, i) => 
-      i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-    );
+  const renderMarkdown = (content: string): ReactNode => {
+    const lines = content.split('\n');
+    const elements: ReactNode[] = [];
+    let currentList: string[] = [];
+    let inCodeBlock = false;
+    let codeBuffer: string[] = [];
+
+    const renderInline = (text: string): ReactNode => {
+      const parts = text.split('**');
+      return parts.map((part, idx) =>
+        idx % 2 === 1 ? <strong key={`${idx}-${part}`}>{part}</strong> : part
+      );
+    };
+
+    const flushList = () => {
+      if (!currentList.length) return;
+      elements.push(
+        <ul className="list-disc list-inside space-y-1" key={`ul-${elements.length}`}>
+          {currentList.map((item, idx) => (
+            <li key={`li-${elements.length}-${idx}`}>{renderInline(item)}</li>
+          ))}
+        </ul>
+      );
+      currentList = [];
+    };
+
+    const flushCode = () => {
+      if (!inCodeBlock) return;
+      elements.push(
+        <pre
+          key={`code-${elements.length}`}
+          className="bg-gray-900 text-gray-100 text-sm rounded-lg p-3 overflow-x-auto"
+        >
+          <code>{codeBuffer.join('\n')}</code>
+        </pre>
+      );
+      codeBuffer = [];
+      inCodeBlock = false;
+    };
+
+    lines.forEach((line, idx) => {
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith('```')) {
+        if (inCodeBlock) {
+          flushCode();
+        } else {
+          inCodeBlock = true;
+          codeBuffer = [];
+        }
+        return;
+      }
+
+      if (inCodeBlock) {
+        codeBuffer.push(line);
+        return;
+      }
+
+      if (trimmed.startsWith('- ')) {
+        currentList.push(trimmed.slice(2));
+        return;
+      }
+
+      flushList();
+
+      if (trimmed.startsWith('### ')) {
+        elements.push(
+          <h3 className="font-semibold text-base mt-3" key={`h3-${idx}`}>
+            {renderInline(trimmed.slice(4))}
+          </h3>
+        );
+        return;
+      }
+
+      if (trimmed.startsWith('## ')) {
+        elements.push(
+          <h2 className="font-semibold text-lg mt-3" key={`h2-${idx}`}>
+            {renderInline(trimmed.slice(3))}
+          </h2>
+        );
+        return;
+      }
+
+      if (trimmed === '') {
+        elements.push(<div className="h-2" key={`spacer-${idx}`} />);
+        return;
+      }
+
+      elements.push(
+        <p className="leading-relaxed" key={`p-${idx}`}>
+          {renderInline(line)}
+        </p>
+      );
+    });
+
+    flushCode();
+    flushList();
+
+    return <div className="space-y-2">{elements}</div>;
   };
 
   return (
-    <div className="flex flex-col h-[500px] max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="flex flex-col h-[520px] max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-blue-600 text-white p-4">
         <div className="flex justify-between items-center">
           <div>
@@ -292,12 +386,14 @@ const OSExpertBot = () => {
             className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
           >
             <div 
-              className={`inline-block p-3 rounded-lg ${message.role === 'user' 
+              className={`inline-block p-3 rounded-lg max-w-full text-left ${
+                message.role === 'user' 
                 ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-800'}`}
+                : 'bg-gray-200 text-gray-800'
+              }`}
             >
-              <div className="whitespace-pre-wrap">
-                {formatMessage(message.content)}
+              <div className="whitespace-pre-wrap break-words">
+                {renderMarkdown(message.content)}
               </div>
               <div className="text-xs opacity-70 mt-1">
                 {message.timestamp.toLocaleTimeString()}
@@ -338,7 +434,7 @@ const OSExpertBot = () => {
         </p>
         {connectionStatus === 'disconnected' && (
           <p className="text-xs text-red-500 mt-1">
-            ⚠️ Backend not connected. Make sure to run: <code>cd backend && python api.py</code>
+            Backend not connected. Make sure to run: <code>cd backend && python api.py</code>
           </p>
         )}
       </div>

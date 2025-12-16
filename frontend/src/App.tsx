@@ -2,10 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import ChatPage from "./pages/ChatPage";
+import LearningPage from "./pages/LearningPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 import { NavProvider, useNav } from "./context/NavContext";
 import Navigation from "@/components/Navigation";
@@ -54,6 +56,7 @@ export const announceToScreenReader = (message: string) => {
 
 const MainContent = () => {
   const { isSidebarOpen } = useNav();
+  const navigate = useNavigate();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
   useEffect(() => {
@@ -75,26 +78,24 @@ const MainContent = () => {
 
   const handleGenerateProcesses = () => {
     announceToScreenReader('Generating new processes');
-    // This would trigger the actual process generation
     const event = new CustomEvent('generate-processes');
     window.dispatchEvent(event);
   };
 
   const handleRunSimulation = () => {
     announceToScreenReader('Running simulation');
-    // This would trigger the actual simulation
     const event = new CustomEvent('run-simulation');
     window.dispatchEvent(event);
   };
 
   const handleOpenSettings = () => {
     announceToScreenReader('Opening settings');
-    // Navigate to settings or open modal
+    navigate('/settings');
   };
 
   const handleShowHelp = () => {
     announceToScreenReader('Opening help');
-    // Navigate to help or open modal
+    navigate('/learn');
   };
   
   return (
@@ -112,6 +113,8 @@ const MainContent = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/learn" element={<LearningPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

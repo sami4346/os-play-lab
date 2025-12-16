@@ -348,9 +348,9 @@ const ProcessStateVisualizer = ({
                       <Slider
                         value={[animationSpeed]}
                         onValueChange={handleSpeedChange}
-                        min={0.25}
+                        min={0.1}
                         max={2}
-                        step={0.25}
+                        step={0.1}
                         className="w-full"
                       />
                     </div>

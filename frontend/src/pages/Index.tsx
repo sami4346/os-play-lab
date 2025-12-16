@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Process } from '@/types/process';
 import { SchedulingResult } from '@/types/process';
 import ProcessTable from '@/components/ProcessTable';
@@ -48,6 +48,29 @@ const Index = () => {
   const [isSimulating, setIsSimulating] = useState(false);
   const [useMLSuggestion, setUseMLSuggestion] = useState<boolean>(false);
   const [mlRecommendedAlgorithm, setMLRecommendedAlgorithm] = useState<string>('');
+
+  // Listen for quick action events from FloatingActionButton
+  useEffect(() => {
+    const handleGenerateProcesses = () => {
+      generateRandomProcesses();
+    };
+
+    const handleRunSimulation = () => {
+      if (processes.length === 0) {
+        toast.error('Please generate processes first!');
+        return;
+      }
+      runSimulation();
+    };
+
+    window.addEventListener('generate-processes', handleGenerateProcesses);
+    window.addEventListener('run-simulation', handleRunSimulation);
+
+    return () => {
+      window.removeEventListener('generate-processes', handleGenerateProcesses);
+      window.removeEventListener('run-simulation', handleRunSimulation);
+    };
+  }, [processes, selectedAlgorithm, memoryMode, useMLSuggestion]);
 
   const generateRandomProcesses = () => {
     const count = Math.floor(Math.random() * 3) + 4; // 4-6 processes
@@ -239,10 +262,17 @@ const Index = () => {
       timeQuantum
     );
 
-    // Only award points if the player selected the optimal algorithm
+    // Award points based on performance
+    let pointsAwarded = Math.max(0, evaluation.score);
     if (evaluation.optimalAlgorithm && evaluation.optimalAlgorithm === algorithmToUse) {
-      setScore(prev => prev + evaluation.score);
+      // Bonus points for selecting optimal algorithm
+      pointsAwarded = evaluation.score;
+    } else {
+      // Reduced points if not optimal
+      pointsAwarded = Math.max(1, Math.floor(evaluation.score * 0.5));
     }
+    
+    setScore(prev => prev + pointsAwarded);
     setFeedback(evaluation.feedback);
     setOptimalAlgorithm(evaluation.optimalAlgorithm);
     if (evaluation.comparativeMetrics) {
@@ -251,9 +281,11 @@ const Index = () => {
 
     setTimeout(() => {
       setIsSimulating(false);
-      const pointsAwarded = (evaluation.optimalAlgorithm === algorithmToUse) ? evaluation.score : 0;
+      const message = evaluation.optimalAlgorithm === algorithmToUse 
+        ? `Full score! +${pointsAwarded} points - You selected the optimal algorithm!`
+        : `Partial score. +${pointsAwarded} points - ${evaluation.optimalAlgorithm} would be better.`;
       toast.success('Simulation completed!', {
-        description: `Score: +${pointsAwarded} points`
+        description: message
       });
     }, 1000);
   };
@@ -423,12 +455,12 @@ const Index = () => {
           </div>
 
           {/* Middle Column - Process Table */}
-          <div className="md:col-span-1 lg:col-span-1">
+          <div className="md:col-span-1 lg:col-span-2">
             <ProcessTable processes={processes} />
           </div>
 
           {/* Right Column - Memory Visualizer */}
-          <div className="md:col-span-1 lg:col-span-1">
+          <div className="md:col-span-1 lg:col-span-3">
             <MemoryVisualizer
               memoryBlocks={memoryBlocks}
               onCompact={handleCompactMemory}
