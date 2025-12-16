@@ -39,7 +39,7 @@ Interactive playground for OS scheduling, memory allocation, page replacement, a
 - Set `GEMINI_API_KEY=<your-key>` if you want Gemini answers; otherwise only the knowledge base is used.
 - `cd backend`
 - `python -m venv .venv`
-- `..\.venv\Scripts\Activate.ps1`
+- `.\.venv\Scripts\Activate.ps1`
 - `pip install -r requirements.txt`
 - Run `python api.py` (serves on http://localhost:5000 with CORS for the frontend ports).
 - The ML recommender loads `ml_scheduler.pkl` if present; if missing or incompatible it self-trains on synthetic data and saves a fresh model.
